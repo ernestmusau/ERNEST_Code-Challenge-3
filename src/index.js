@@ -24,17 +24,50 @@ function getMovies() {
 
 // Function to render a movie in the list
 function renderMovieList(movie) {
-    // Create a list item for the movie
     const li = document.createElement("li");
-    li.textContent = `${movie.title}`; // Set the text content of the list item to the movie title
-    li.id = "id" + movie.id; // Set the id of the list item based on the movie id
-    const ul = document.querySelector("#films"); // Get the unordered list element
-    ul.appendChild(li); // Append the list item to the unordered list
-    // Add CSS classes and click event listener to the movie item
+    li.textContent = `${movie.title}`;
+    li.id = "id" + movie.id;
+
+// Add a delete button that deletes a movie from the list and server
+    const deleteButton = document.createElement("button");
+    deleteButton.textContent = "Delete";
+    deleteButton.classList.add("delete-button");
+    deleteButton.addEventListener("click", (event) => {
+
+
+// Stop event from bubbling up the delete button
+        event.stopPropagation();
+        deleteMovie(movie.id);
+    });
+
+    li.appendChild(deleteButton);
+
+    const ul = document.querySelector("#films");
+    ul.appendChild(li);
     li.classList.add("film");
     li.classList.add('item');
-    li.addEventListener("click", () => { handleMovieClick(movie) }); // Call handleMovieClick() when the movie item is clicked
+    li.addEventListener("click", () => {handleMovieClick(movie)});
 }
+
+// Function to handle the deletion of a movie
+function deleteMovie(movieId) {
+fetch(`${db}/${movieId}`, {
+    method: "DELETE",
+})
+.then(response => {
+    if (response.ok) {
+        // Remove the movie from the list in the UI
+        const movieElement = document.querySelector("#id" + movieId);
+        movieElement.remove();
+    } else {
+        throw new Error('Failed to delete movie');
+    }
+})
+.catch(error => {
+    console.error('Error deleting movie:', error);
+});
+}
+
 
 // Function to handle movie click event and display movie details
 function handleMovieClick(movie) {
@@ -51,21 +84,21 @@ function handleMovieClick(movie) {
     info.querySelector("#ticket-num").textContent = movie.capacity - movie.tickets_sold + " remaining tickets";
 }
 
-// Function to handle "Buy Ticket" button click event
-function handleBuyTicket(e) {
-    // Get the remaining ticket count from the UI
+
+
+function handleBuyTicket(btn) {
     const ticketDiv = document.querySelector("#ticket-num");
     const tickets = ticketDiv.textContent.split(" ")[0];
-    // Check if there are available tickets
     if (tickets > 0) {
-        // Decrease the remaining ticket count and update UI
         ticketDiv.textContent = tickets - 1 + " remaining tickets";
-    } else if (tickets == 0) {
-        // Alert the user if no more tickets are available
-        alert("No more tickets!");
-        // Update button style to indicate it's sold out
-        e.target.classList.add("sold-out");
-        e.target.classList.remove("orange");
+    }
+    else  {
+        let buyBtn = document.getElementById("buy-ticket")
+        alert("No more tickets!");//output is given to the user that the tickets are sold out
+        ticketDiv.textContent = 'Sold Out';
+        buyBtn.textContent = 'Sold Out';
+        buyBtn.disabled = true;
+        a.target.classList.add("sold-out");
+        a.target.classList.remove("orange");
     }
 }
-
